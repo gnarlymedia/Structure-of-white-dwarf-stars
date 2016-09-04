@@ -349,6 +349,10 @@ void test_rho_c_and_Y_e_for_different_white_dwarves(
     printf("\t\t\t\t\t\t\t\t\t\tSirius_B\t\t\tEri_B\n");
     printf("rho_bar_sub_c\tY_e\t\tRho_sub_c_sol\tM_solar\t\tR_solar\t\tMass %% Diff\tRadius %% Diff\tMass %% Diff\tRadius %% Diff\n");
     h = 0.0001;
+    // for testing single values
+    Y_e = Y_e_start;
+    rho_bar_sub_c = rho_bar_sub_c_start;
+    // for testing a range
     for (Y_e = Y_e_start; Y_e < Y_e_stop; Y_e = Y_e + Y_E_step) {
         for (rho_bar_sub_c = rho_bar_sub_c_start; rho_bar_sub_c < rho_bar_sub_c_stop; rho_bar_sub_c = rho_bar_sub_c + rho_bar_sub_c_step) {
             runge_kutta(h, rho_bar_sub_c, r_bar_array_rk_plot, m_bar_array_rk_plot, rho_bar_array_rk_plot, &final_m_bar_rk, &final_r_bar_rk);
@@ -475,7 +479,7 @@ void eval_euler_and_rk_for_plots(
         double * final_m_bar_rk,
         double * final_r_bar_rk
 ) {
-    printf("Plot mass & radius for Euler & Runge-Kutta methods, using scaled central density = 10.0 and step size = %lf\n\n", h);
+    printf("Mass & radius calculated for plotting, using Euler & Runge-Kutta methods, using scaled central density = 10.0 and step size = %lf\n\n", h);
     printf("Euler - final values\n");
     euler(h, rho_bar_sub_c, r_bar_array_euler_plot, rho_bar_array_euler_plot, m_bar_array_euler_plot, final_m_bar_euler, final_r_bar_euler);
     printf("r_bar\t\tm_bar\n");
@@ -489,7 +493,7 @@ void eval_euler_and_rk_for_plots(
 
 int main(void) {
     printf("\n\n---------------------------------------------------------------------------------------------------------");
-    printf("Start\n\n");
+    printf("\nStart\n\n");
 
     double h, rho_bar_sub_c;
     double final_m_bar_euler;
@@ -510,20 +514,20 @@ int main(void) {
     double m_diff_euler_pc, r_diff_euler_pc;
     double m_diff_rk_pc, r_diff_rk_pc;
 
-    h = 0.01;
+    h = 0.00001;
     rho_bar_sub_c = 10.0;
     eval_euler_and_rk_for_plots(h, rho_bar_sub_c, r_bar_array_euler_plot, rho_bar_array_euler_plot, m_bar_array_euler_plot, &final_m_bar_euler, &final_r_bar_euler, r_bar_array_rk_plot, rho_bar_array_rk_plot, m_bar_array_rk_plot, &final_m_bar_rk, &final_r_bar_rk);
 
 //    printf("test: %f\n", rho_bar_array_euler_plot[counter - 2]);
 
     char any_key;
-//    printf("\nHit ENTER to continue: ");
-//    scanf("%c", &any_key);
+    printf("\nHit ENTER to continue: ");
+    scanf("%c", &any_key);
 
     // Plotting
-//    if (1 != cpgbeg(0, "?", 1, 1))
+    if (1 != cpgbeg(0, "?", 1, 1))
 //    if (1 != cpgbeg(0, "proj_2_plot.ps/VCPS", 1, 1))
-    if (1 != cpgbeg(0, "proj_2_plot.ps/CPS", 1, 1))
+//    if (1 != cpgbeg(0, "proj_2_plot.ps/CPS", 1, 1))
 //    if (1 != cpgbeg(0, "/XWINDOW", 1, 1))
     {
         return 1;
@@ -539,9 +543,9 @@ int main(void) {
     plot("Scaled radius", "Sacled density", "Plot of scaled density versus scaled radius of a White Dwarf star using Runge-Kutta's method", 0.0, 1.6, 0.0, 10.0, counter, r_bar_array_rk_plot, rho_bar_array_rk_plot, final_r_bar_rk, 0.0);
     cpgend();
 
-
+    printf("\n\n---------------------------------------------------------------------------------------------------------\n");
     printf("Stability of solutions against step size, h for scaled central density rho_bar_sub_c = 10.0\n\n");
-    printf("\t\tEuler\t\t\t\t\t\tRunge-Kutta\n");
+    printf("\t\tEuler\t\t\t\t\t\t\t\tRunge-Kutta\n");
     printf("Step\t\tM_bar\t\tR_bar\t\tM_Diff\t\tR_Diff\t\tM_bar\t\tR_bar\t\tM_Diff\t\tR_Diff\n");
     for (h = 1.0; h > 1.0E-6; h = h / 10.0) {
         euler(h, rho_bar_sub_c, r_bar_array_euler_plot, rho_bar_array_euler_plot, m_bar_array_euler_plot,
@@ -563,10 +567,10 @@ int main(void) {
     printf("\nHit ENTER to continue: ");
     scanf("%c", &any_key);
 
-    double rho_sub_c;
-
+    printf("\n\n---------------------------------------------------------------------------------------------------------");
     printf("\n\nSolutions for different scaled central densities, rho_c_bar, for step size h = 0.00001 using Runge_Kutta\n\n");
-    printf("rho_c_bar\t\trho_c\t\t\tM_bar\t\tR_bar\n");
+    printf("rho_c_bar\t\trho_c\t\t\trho_c_sol\t\tM_bar\t\tR_bar\n");
+    double rho_sub_c, rho_sub_c_sol;
     h = 0.00001;
     double Y_e = 1;
     for (rho_bar_sub_c = 0.1; rho_bar_sub_c < 1.0E9; rho_bar_sub_c = rho_bar_sub_c * 10.0) {
@@ -574,6 +578,7 @@ int main(void) {
                     &final_r_bar_rk);
 
         rho_sub_c = val_from_scaled_val(rho_naught_func(Y_e), rho_bar_sub_c);
+        rho_sub_c_sol = rho_solar_func(rho_sub_c);
 
         printf("%lf", rho_bar_sub_c);
 
@@ -587,6 +592,12 @@ int main(void) {
             printf("\t");
         }
 
+        printf("\t%lf", rho_sub_c_sol);
+
+        if (rho_bar_sub_c < 1.0E5) {
+            printf("\t");
+        }
+
         printf("\t%lf\t%lf\n", final_m_bar_rk, final_r_bar_rk);
     }
 
@@ -594,14 +605,19 @@ int main(void) {
     scanf("%c", &any_key);
 
     // Eri B
-    test_rho_c_and_Y_e_for_different_white_dwarves(0.00001, 1.0, 15.0, 1.0, 0.464, 0.5, 0.001);
-    
+    // for testing a range
+    test_rho_c_and_Y_e_for_different_white_dwarves(0.00001, 1.0, 1.55, 0.01, 0.465, 0.49, 0.01);
+    // for testing a single value
+//    test_rho_c_and_Y_e_for_different_white_dwarves(0.00001, 1.219000, 1.55, 0.0001, 0.471000, 0.49, 0.001);
+
     printf("\nHit ENTER to continue: ");
     scanf("%c", &any_key);
 
     // Sirius B
-//    test_rho_c_and_Y_e_for_different_white_dwarves(0.00001, 25.0, 26.0, 0.1, 0.464, 0.5, 0.01);
-    test_rho_c_and_Y_e_for_different_white_dwarves(0.00001, 1.0, 50.0, 1.0, 0.49, 0.5, 0.001);
+    // for testing a range
+    test_rho_c_and_Y_e_for_different_white_dwarves(0.0001, 20.0, 25.0, 0.01, 0.464, 0.5, 0.01);
+    // for testing a single value
+//    test_rho_c_and_Y_e_for_different_white_dwarves(0.0001, 22.630000, 25.0, 0.001, 0.498000, 0.5, 0.001);
 
     printf("---------------------------------------------------------------------------------------------------------\n");
     printf("Finish\n\n");
