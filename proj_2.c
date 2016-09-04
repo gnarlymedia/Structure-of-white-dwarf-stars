@@ -65,10 +65,6 @@ void euler(double h, double rho_bar_sub_c, float r_bar_plot[], float rho_bar_plo
         radius = r_bar_array[counter - 1];
         density = rho_bar_array[counter - 1];
 
-//        if (counter % 10 == 0) {
-//            printf("\t%lf\t%lf\t%lf\n", radius, density, mass);
-//        }
-
         old_mass = mass;
         mass = mass + h * d_m_bar_d_r_bar(radius, density);
         density = density + h * d_rho_bar_d_r_bar(radius, density, old_mass);
@@ -188,12 +184,11 @@ void runge_kutta(
 }
 
 int
-plot(char *x_axis_label, char *y_axis_label, char *plot_label, double x_min, double x_max, double y_min, double y_max,
-     int number_points, float x_array[], float y_array[]) {
+plot(char *x_axis_label, char *y_axis_label, char *plot_label, double x_min, double x_max, double y_min, double y_max, int number_points, float x_array[], float y_array[], double final_val_x, double final_val_y) {
     // printf("y_array[number_points - 1] %f", y_array[number_points - 1]);
 
     // set up environment
-    // cpgenv(x_min, x_array[number_points - 1], y_min, y_array[number_points - 2], 0, 2);
+//     cpgenv(x_min, x_array[number_points - 2], y_min, y_array[number_points - 2], 0, 2);
     cpgenv(x_min, x_max, y_min, y_max, 0, 2);
 
     cpgbbuf();
@@ -206,7 +201,45 @@ plot(char *x_axis_label, char *y_axis_label, char *plot_label, double x_min, dou
 
     cpgsci(3);
 
-    cpgline((float) number_points, x_array, y_array);
+    cpgline((float) number_points - 1, x_array, y_array);
+
+    int i;
+    // output final x value
+    float x_array_final_val_x[number_points - 1], y_array_final_val_x[number_points - 1];
+    for (i = 0; i < number_points; i++)
+    {
+        // fill up arrays
+        x_array_final_val_x[i] = final_val_x;
+        y_array_final_val_x[i] = i;
+    }
+
+    cpgsci(4);
+    // draw line representing final value
+    cpgline((float) number_points - 1, x_array_final_val_x, y_array_final_val_x);
+
+    // annotate intercept
+//    char output_str_x[20];
+//    snprintf(output_str_x, 20, "Final value: %lf", final_val_x);
+//    cpgtext((float)x_min - ((float)(final_val_x - final_val_x * 0.2)), (float)y_min - final_val_y * 0.1, output_str_x);
+
+    // output final y value
+    float x_array_final_val_y[number_points - 1], y_array_final_val_y[number_points - 1];
+    for (i = 0; i < number_points; i++)
+    {
+        // fill up arrays
+        x_array_final_val_y[i] = i;
+        y_array_final_val_y[i] = final_val_y;
+    }
+
+    cpgsci(4);
+    // draw line representing final value
+    cpgline((float) number_points - 1, x_array_final_val_y, y_array_final_val_y);
+
+    // annotate intercept
+//    char output_str_y[20];
+//    snprintf(output_str_y, 20, "Final value: %lf", final_val_y);
+//    cpgtext((float)x_min - final_val_x * 0.02, (float)y_min - ((float)(final_val_y + final_val_y * 0.01)), output_str_y);
+
     cpgsci(1);
     cpgebuf();
     cpgsave();
@@ -273,7 +306,7 @@ void check_within_range(
     }
 }
 
-test_rho_c_and_Y_e_for_different_white_dwarves(
+void test_rho_c_and_Y_e_for_different_white_dwarves(
     double h,
     double rho_bar_sub_c_start,
     double rho_bar_sub_c_stop,
@@ -428,10 +461,37 @@ test_rho_c_and_Y_e_for_different_white_dwarves(
     }
 }
 
+void eval_euler_and_rk_for_plots(
+        double h,
+        double rho_bar_sub_c,
+        float r_bar_array_euler_plot[],
+        float rho_bar_array_euler_plot[],
+        float m_bar_array_euler_plot[],
+        double * final_m_bar_euler,
+        double * final_r_bar_euler,
+        float r_bar_array_rk_plot[],
+        float rho_bar_array_rk_plot[],
+        float m_bar_array_rk_plot[],
+        double * final_m_bar_rk,
+        double * final_r_bar_rk
+) {
+    printf("Plot mass & radius for Euler & Runge-Kutta methods, using scaled central density = 10.0 and step size = %lf\n\n", h);
+    printf("Euler - final values\n");
+    euler(h, rho_bar_sub_c, r_bar_array_euler_plot, rho_bar_array_euler_plot, m_bar_array_euler_plot, final_m_bar_euler, final_r_bar_euler);
+    printf("r_bar\t\tm_bar\n");
+    printf("%lf\t%lf\n\n", * final_r_bar_euler, * final_m_bar_euler);
+
+    printf("Runge-Kutta - final values\n");
+    runge_kutta(h, rho_bar_sub_c, r_bar_array_rk_plot, rho_bar_array_rk_plot, m_bar_array_rk_plot, final_m_bar_rk, final_r_bar_rk);
+    printf("r_bar\t\tm_bar\n");
+    printf("%lf\t%lf\n", * final_m_bar_rk, * final_r_bar_rk);
+}
+
 int main(void) {
+    printf("\n\n---------------------------------------------------------------------------------------------------------");
     printf("Start\n\n");
 
-    double h;
+    double h, rho_bar_sub_c;
     double final_m_bar_euler;
     double final_r_bar_euler;
     double final_m_bar_rk;
@@ -450,10 +510,39 @@ int main(void) {
     double m_diff_euler_pc, r_diff_euler_pc;
     double m_diff_rk_pc, r_diff_rk_pc;
 
+    h = 0.01;
+    rho_bar_sub_c = 10.0;
+    eval_euler_and_rk_for_plots(h, rho_bar_sub_c, r_bar_array_euler_plot, rho_bar_array_euler_plot, m_bar_array_euler_plot, &final_m_bar_euler, &final_r_bar_euler, r_bar_array_rk_plot, rho_bar_array_rk_plot, m_bar_array_rk_plot, &final_m_bar_rk, &final_r_bar_rk);
+
+//    printf("test: %f\n", rho_bar_array_euler_plot[counter - 2]);
+
+    char any_key;
+//    printf("\nHit ENTER to continue: ");
+//    scanf("%c", &any_key);
+
+    // Plotting
+//    if (1 != cpgbeg(0, "?", 1, 1))
+//    if (1 != cpgbeg(0, "proj_2_plot.ps/VCPS", 1, 1))
+    if (1 != cpgbeg(0, "proj_2_plot.ps/CPS", 1, 1))
+//    if (1 != cpgbeg(0, "/XWINDOW", 1, 1))
+    {
+        return 1;
+    }
+    // euler
+    plot("Scaled radius", "Scaled mass", "Plot of scaled mass versus scaled radius of a White Dwarf star using Euler's method", 0.0, 1.6, 0.0, 1.5, counter, r_bar_array_euler_plot, m_bar_array_euler_plot, final_r_bar_euler, final_m_bar_euler);
+
+    plot("Scaled radius", "Scaled density", "Plot of scaled density versus scaled radius of a White Dwarf star using Euler's method", 0.0, 1.6, 0.0, 10.0, counter, r_bar_array_euler_plot, rho_bar_array_euler_plot, final_r_bar_euler, 0.0);
+
+    // Runge-Kutta
+    plot("Scaled radius", "Scaled mass", "Plot of scaled mass versus scaled radius of a White Dwarf star using Runge-Kutta's method", 0.0, 1.6, 0.0, 1.3, counter, r_bar_array_rk_plot, m_bar_array_rk_plot, final_r_bar_rk, final_m_bar_rk);
+
+    plot("Scaled radius", "Sacled density", "Plot of scaled density versus scaled radius of a White Dwarf star using Runge-Kutta's method", 0.0, 1.6, 0.0, 10.0, counter, r_bar_array_rk_plot, rho_bar_array_rk_plot, final_r_bar_rk, 0.0);
+    cpgend();
+
+
     printf("Stability of solutions against step size, h for scaled central density rho_bar_sub_c = 10.0\n\n");
     printf("\t\tEuler\t\t\t\t\t\tRunge-Kutta\n");
     printf("Step\t\tM_bar\t\tR_bar\t\tM_Diff\t\tR_Diff\t\tM_bar\t\tR_bar\t\tM_Diff\t\tR_Diff\n");
-    double rho_bar_sub_c = 10.0;
     for (h = 1.0; h > 1.0E-6; h = h / 10.0) {
         euler(h, rho_bar_sub_c, r_bar_array_euler_plot, rho_bar_array_euler_plot, m_bar_array_euler_plot,
               &final_m_bar_euler, &final_r_bar_euler);
@@ -470,6 +559,9 @@ int main(void) {
         printf("%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n", h, final_m_bar_euler, final_r_bar_euler,
                m_diff_euler_pc, r_diff_euler_pc, final_m_bar_rk, final_r_bar_rk, m_diff_rk_pc, r_diff_rk_pc);
     }
+
+    printf("\nHit ENTER to continue: ");
+    scanf("%c", &any_key);
 
     double rho_sub_c;
 
@@ -498,33 +590,19 @@ int main(void) {
         printf("\t%lf\t%lf\n", final_m_bar_rk, final_r_bar_rk);
     }
 
+    printf("\nHit ENTER to continue: ");
+    scanf("%c", &any_key);
+
     // Eri B
     test_rho_c_and_Y_e_for_different_white_dwarves(0.00001, 1.0, 15.0, 1.0, 0.464, 0.5, 0.001);
-
-    char any_key;
-    printf("Hit any key to continue: ");
-    scanf("%s", &any_key);
+    
+    printf("\nHit ENTER to continue: ");
+    scanf("%c", &any_key);
 
     // Sirius B
 //    test_rho_c_and_Y_e_for_different_white_dwarves(0.00001, 25.0, 26.0, 0.1, 0.464, 0.5, 0.01);
     test_rho_c_and_Y_e_for_different_white_dwarves(0.00001, 1.0, 50.0, 1.0, 0.49, 0.5, 0.001);
 
-    // Plotting
-//    if (1 != cpgbeg(0, "?", 1, 1))
-//    if (1 != cpgbeg(0, "proj_1_plot.ps/VCPS", 1, 1))
-/*    if (1 != cpgbeg(0, "/XWINDOW", 1, 1))
-    {
-        return 1;
-    }
-    // euler
-    plot("Radius", "Mass", "Euler", 0.0, 1.55, 0.0, 1.35, counter, r_bar_array_euler_plot, m_bar_array_euler_plot);
-    plot("Radius", "Density", "Euler", 0.0, 1.6, 0.0, 10.0, counter, r_bar_array_euler_plot, rho_bar_array_euler_plot);
-
-    // Runge-Kutta
-    plot("Radius", "Mass", "Range-Kutta", 0.0, 1.6, 0.0, 1.3, counter, r_bar_array_rk_plot, m_bar_array_rk_plot);
-    plot("Radius", "Density", "Range-Kutta", 0.0, 1.6, 0.0, 10.0, counter, r_bar_array_rk_plot, rho_bar_array_rk_plot);
-    cpgend();
-*/
-
+    printf("---------------------------------------------------------------------------------------------------------\n");
     printf("Finish\n\n");
 }
