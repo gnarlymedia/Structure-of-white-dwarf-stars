@@ -11,12 +11,12 @@ Make sure you have cpgplot installed, the C-callable version of pgplot <http://w
 ### Command line
 Build:
 ```
-make proj_1
+make proj_2
 ```
 
 Then run:
 ```
-./proj_1
+./proj_2
 ```
 
 ### Within CLion, JetBrains' IDE for C projects
