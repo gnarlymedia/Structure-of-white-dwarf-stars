@@ -1,4 +1,4 @@
-/proj_2.o
-/proj_2
+/proj_*
+!/proj_*.c
 /core
-/proj_2_plot.ps
+/*plot.ps

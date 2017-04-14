@@ -183,8 +183,7 @@ void runge_kutta(
     return;
 }
 
-int
-plot(char *x_axis_label, char *y_axis_label, char *plot_label, double x_min, double x_max, double y_min, double y_max, int number_points, float x_array[], float y_array[], double final_val_x, double final_val_y) {
+int plot(char *x_axis_label, char *y_axis_label, char *plot_label, double x_min, double x_max, double y_min, double y_max, int number_points, float x_array[], float y_array[], double final_val_x, double final_val_y) {
     // printf("y_array[number_points - 1] %f", y_array[number_points - 1]);
 
     // set up environment
@@ -525,10 +524,10 @@ int main(void) {
     scanf("%c", &any_key);
 
     // Plotting
-    if (1 != cpgbeg(0, "?", 1, 1))
+//    if (1 != cpgbeg(0, "?", 1, 1))
 //    if (1 != cpgbeg(0, "proj_2_plot.ps/VCPS", 1, 1))
 //    if (1 != cpgbeg(0, "proj_2_plot.ps/CPS", 1, 1))
-//    if (1 != cpgbeg(0, "/XWINDOW", 1, 1))
+    if (1 != cpgbeg(0, "/XWINDOW", 1, 1))
     {
         return 1;
     }
@@ -540,7 +539,7 @@ int main(void) {
     // Runge-Kutta
     plot("Scaled radius", "Scaled mass", "Plot of scaled mass versus scaled radius of a White Dwarf star using Runge-Kutta's method", 0.0, 1.6, 0.0, 1.3, counter, r_bar_array_rk_plot, m_bar_array_rk_plot, final_r_bar_rk, final_m_bar_rk);
 
-    plot("Scaled radius", "Sacled density", "Plot of scaled density versus scaled radius of a White Dwarf star using Runge-Kutta's method", 0.0, 1.6, 0.0, 10.0, counter, r_bar_array_rk_plot, rho_bar_array_rk_plot, final_r_bar_rk, 0.0);
+    plot("Scaled radius", "Scaled density", "Plot of scaled density versus scaled radius of a White Dwarf star using Runge-Kutta's method", 0.0, 1.6, 0.0, 10.0, counter, r_bar_array_rk_plot, rho_bar_array_rk_plot, final_r_bar_rk, 0.0);
     cpgend();
 
     printf("\n\n---------------------------------------------------------------------------------------------------------\n");
